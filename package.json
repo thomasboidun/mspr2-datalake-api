@@ -1,0 +1,16 @@
+{
+  "name": "datalake",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node .\\app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "thomas boidun",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  }
+}
