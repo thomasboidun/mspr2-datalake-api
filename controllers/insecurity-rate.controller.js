@@ -1,30 +1,22 @@
 const db = require('../db/db-access');
+const utils = require('../db/db-utils');
 
 exports.getAll = (req, res, next) => {
-    const query = `SELECT * FROM insecurity_rate;`;
+    const params = {
+        'commune_id': parseInt(req.query.communeId),
+        'year': parseInt(req.query.year)
+    }
 
-    db.all(query, [], function (err, rows) {
+    const whereClause = utils.buildWhereClause(params);
+
+    const query = `SELECT * FROM insecurity_rate ${whereClause.whereClause};`;
+
+    db.all(query, whereClause.values, function (err, rows) {
         if (err) {
             console.error(err);
             res.status(500).json({ error: err.message });
         } else {
             res.json(rows);
-        }
-    });
-}
-
-exports.getById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `SELECT * FROM insecurity_rate WHERE id = ?;`;
-    db.get(query, params, function (err, row) {
-        if (err) {
-            console.error(err);
-            res.status(500).json({ error: err.message });
-        } else if (row) {
-            res.json(row);
-        } else {
-            res.status(404).json({ error: `Insecurity rate standard not found` });
         }
     });
 }
@@ -43,35 +35,35 @@ exports.create = (req, res, next) => {
     });
 }
 
-exports.updateById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const { communeId, insecurityRate, year } = req.body;
-    const params = [communeId, insecurityRate, year, id];
-    const query = `UPDATE insecurity_rate SET commune_id = ?, insecurity_rate = ?, year = ?, WHERE id = ?;`;
+exports.update = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const { insecurityRate } = req.body;
+    const params = [communeId, insecurityRate, year, communeId, year];
+    const query = `UPDATE insecurity_rate SET commune_id = ?, insecurity_rate = ?, year = ? WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
             res.status(500).json({ error: err.message });
         } else if (this.changes === 0) {
-            res.status(404).json({ error: `Insecurity rate standard not found` });
+            res.status(404).json({ error: `Insecurity rate not found` });
         } else {
-            res.status(200).json({ message: `Insecurity rate standard updated` });
+            res.status(200).json({ message: `Insecurity rate updated` });
         }
     });
 }
 
-exports.deleteById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `DELETE FROM insecurity_rate WHERE id = ?;`;
+exports.delete = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const params = [communeId, year];
+    const query = `DELETE FROM insecurity_rate WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
             res.status(500).json({ error: err.message });
         } else if (this.changes === 0) {
-            res.status(404).json({ error: `Insecurity rate standard not found` });
+            res.status(404).json({ error: `Insecurity rate not found` });
         } else {
-            res.status(200).json({ message: `Insecurity rate standard deleted` });
+            res.status(200).json({ message: `Insecurity rate deleted` });
         }
     });
 }

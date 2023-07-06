@@ -1,30 +1,22 @@
 const db = require('../db/db-access');
+const utils = require('../db/db-utils');
 
 exports.getAll = (req, res, next) => {
-    const query = `SELECT * FROM median_living_standard;`;
+    const params = {
+        'commune_id': parseInt(req.query.communeId),
+        'year': parseInt(req.query.year)
+    };
 
-    db.all(query, [], function (err, rows) {
+    const whereClause = utils.buildWhereClause(params);
+
+    const query = `SELECT * FROM median_living_standard ${whereClause.whereClause};`;
+
+    db.all(query, whereClause.values, function (err, rows) {
         if (err) {
             console.error(err);
             res.status(500).json({ error: err.message });
         } else {
             res.json(rows);
-        }
-    });
-}
-
-exports.getById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `SELECT * FROM median_living_standard WHERE id = ?;`;
-    db.get(query, params, function (err, row) {
-        if (err) {
-            console.error(err);
-            res.status(500).json({ error: err.message });
-        } else if (row) {
-            res.json(row);
-        } else {
-            res.status(404).json({ error: `Median living standard not found` });
         }
     });
 }
@@ -43,11 +35,11 @@ exports.create = (req, res, next) => {
     });
 }
 
-exports.updateById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const { communeId, medianLivingStandard, year } = req.body;
-    const params = [communeId, medianLivingStandard, year, id];
-    const query = `UPDATE median_living_standard SET commune_id = ?, median_living_standard = ?, year = ?, WHERE id = ?;`;
+exports.update = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const { medianLivingStandard } = req.body;
+    const params = [communeId, medianLivingStandard, year, communeId, year];
+    const query = `UPDATE median_living_standard SET commune_id = ?, median_living_standard = ?, year = ? WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
@@ -60,10 +52,10 @@ exports.updateById = (req, res, next) => {
     });
 }
 
-exports.deleteById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `DELETE FROM median_living_standard WHERE id = ?;`;
+exports.delete = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const params = [communeId, year];
+    const query = `DELETE FROM median_living_standard WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);

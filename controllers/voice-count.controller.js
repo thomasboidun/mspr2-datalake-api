@@ -1,30 +1,22 @@
 const db = require('../db/db-access');
+const utils = require('../db/db-utils');
 
 exports.getAll = (req, res, next) => {
-    const query = `SELECT * FROM voice_count;`;
+    const params = {
+        'commune_id': parseInt(req.query.communeId),
+        'year': parseInt(req.query.year)
+    };
 
-    db.all(query, [], function (err, rows) {
+    const whereClause = utils.buildWhereClause(params);
+
+    const query = `SELECT * FROM voice_count ${whereClause.whereClause};`;
+
+    db.all(query, whereClause.values, function (err, rows) {
         if (err) {
             console.error(err);
             res.status(500).json({ error: err.message });
         } else {
             res.json(rows);
-        }
-    });
-}
-
-exports.getById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `SELECT * FROM voice_count WHERE id = ?;`;
-    db.get(query, params, function (err, row) {
-        if (err) {
-            console.error(err);
-            res.status(500).json({ error: err.message });
-        } else if (row) {
-            res.json(row);
-        } else {
-            res.status(404).json({ error: `Voice count not found` });
         }
     });
 }
@@ -43,11 +35,11 @@ exports.create = (req, res, next) => {
     });
 }
 
-exports.updateById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const { communeId, voiceCount, year } = req.body;
-    const params = [communeId, voiceCount, year, id];
-    const query = `UPDATE voice_count SET commune_id = ?, voice_count = ?, year = ?, WHERE id = ?;`;
+exports.update = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const { voiceCount } = req.body;
+    const params = [communeId, voiceCount, year, communeId, year];
+    const query = `UPDATE voice_count SET commune_id = ?, voice_count = ?, year = ? WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
@@ -60,10 +52,10 @@ exports.updateById = (req, res, next) => {
     });
 }
 
-exports.deleteById = (req, res, next) => {
-    const id = parseInt(req.params.id);
-    const params = [id];
-    const query = `DELETE FROM voice_count WHERE id = ?;`;
+exports.delete = (req, res, next) => {
+    const { communeId, year } = req.query;
+    const params = [communeId, year];
+    const query = `DELETE FROM voice_count WHERE commune_id = ? AND year = ?;;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
