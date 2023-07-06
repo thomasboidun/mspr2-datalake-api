@@ -36,9 +36,7 @@ exports.create = (req, res, next) => {
 }
 
 exports.update = (req, res, next) => {
-    const { communeId, year } = req.query;
-    const { joblessRate } = req.body;
-    const params = [communeId, joblessRate, year, communeId, year];
+    const params = [req.body.communeId, req.body.joblessRate, req.body.year, req.query.communeId, req.query.year];
     const query = `UPDATE jobless_rate SET commune_id = ?, jobless_rate = ?, year = ? WHERE commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {

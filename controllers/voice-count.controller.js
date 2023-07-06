@@ -3,6 +3,7 @@ const utils = require('../db/db-utils');
 
 exports.getAll = (req, res, next) => {
     const params = {
+        'candidate_id': parseInt(req.query.candidateId),
         'commune_id': parseInt(req.query.communeId),
         'year': parseInt(req.query.year)
     };
@@ -36,10 +37,8 @@ exports.create = (req, res, next) => {
 }
 
 exports.update = (req, res, next) => {
-    const { communeId, year } = req.query;
-    const { voiceCount } = req.body;
-    const params = [communeId, voiceCount, year, communeId, year];
-    const query = `UPDATE voice_count SET commune_id = ?, voice_count = ?, year = ? WHERE commune_id = ? AND year = ?;`;
+    const params = [req.body.candidateId, req.body.communeId, req.body.voiceCount, req.body.year, req.query.candidateId, req.query.communeId, req.query.year];
+    const query = `UPDATE voice_count SET candidate_id = ?, commune_id = ?, voice_count = ?, year = ? WHERE candidate_id = ? AND commune_id = ? AND year = ?;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
@@ -53,9 +52,9 @@ exports.update = (req, res, next) => {
 }
 
 exports.delete = (req, res, next) => {
-    const { communeId, year } = req.query;
+    const { candidateId, communeId, year } = req.query;
     const params = [communeId, year];
-    const query = `DELETE FROM voice_count WHERE commune_id = ? AND year = ?;;`;
+    const query = `DELETE FROM voice_count WHERE candidate_id = ? AND commune_id = ? AND year = ?;;`;
     db.run(query, params, function (err) {
         if (err) {
             console.error(err);
